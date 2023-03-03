@@ -4,13 +4,28 @@ project(infamous-plugins)
 
 option(MOD "Install MOD gui resources" OFF)
 
+option(CLASSIC "Build the original LV2 plugins" OFF)
+option(DPF "Build DPF ported plugins" ON)
+
 set(LIBDIR lib CACHE STRING "Specifies the name of the library path")
 
-set( PLUGINS "casynth;envfollower;hip2b;powerup;powercut;cheapdist;stuck;ewham;lushlife;bentdelay;mindi;octolo" CACHE STRING "List of plugins to build")
+set( PLUGINS_CLASSIC "casynth;envfollower;hip2b;powerup;powercut;cheapdist;stuck;ewham;lushlife;bentdelay;mindi;octolo" CACHE STRING "List of plugins to build (classic LV2 edition)")
+#set( PLUGINS_DPF "casynth;envfollower;hip2b;powerup;powercut;cheapdist;stuck;ewham;lushlife;bentdelay;mindi;octolo" CACHE STRING "List of plugins to build (DPF ported edition)")
+set( PLUGINS_DPF "casynth" CACHE STRING "List of plugins to build (DPF ported edition)")
 
-foreach( plug ${PLUGINS} )
-    add_subdirectory(src/${plug})
-endforeach(plug)
+if (CLASSIC)
+    foreach( plug ${PLUGINS_CLASSIC} )
+        add_subdirectory(src/${plug})
+    endforeach(plug)
+endif ()
+
+if (DPF)
+    add_subdirectory (vendor/dpf)
+
+    foreach( plug ${PLUGINS_DPF} )
+        add_subdirectory(plugins/${plug})
+    endforeach(plug)
+endif ()
 
 add_executable(infamous-rule
     src/rule.c

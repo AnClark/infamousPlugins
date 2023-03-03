@@ -1,0 +1,17 @@
+#ifndef DISTRHO_PLUGIN_INFO_H
+#define DISTRHO_PLUGIN_INFO_H
+
+#define DISTRHO_PLUGIN_BRAND "Spencer Jackson, AnClark Liu"
+#define DISTRHO_PLUGIN_NAME "the infamous cellular automaton synth"
+#define DISTRHO_PLUGIN_URI "https://github.com/AnClark/infamousPlugins.git"
+#define DISTRHO_PLUGIN_CLAP_ID "infamousPlugins.casynth"
+
+#define DISTRHO_PLUGIN_HAS_UI 0
+#define DISTRHO_PLUGIN_HAS_EMBED_UI 0
+#define DISTRHO_PLUGIN_IS_RT_SAFE 1
+#define DISTRHO_PLUGIN_IS_SYNTH 1
+#define DISTRHO_PLUGIN_NUM_INPUTS 1
+#define DISTRHO_PLUGIN_NUM_OUTPUTS 1
+#define DISTRHO_UI_USER_RESIZABLE 0
+
+#endif

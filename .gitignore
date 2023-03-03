@@ -2,3 +2,5 @@
 *.so
 *avtk_*
 *.user
+.cache*
+build*

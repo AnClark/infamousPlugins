@@ -25,6 +25,30 @@ enum casynth_param_id {
     PARAM_COUNT
 };
 
+enum casynth_id_for_ui {
+    CHANNEL,
+    MASTER_GAIN,
+    RULE,
+    CELL_LIFE,
+    INIT_CELLS,
+    NHARMONICS,
+    HARM_MODE,
+    HARM_WIDTH,
+    WAVE,
+    ENV_A,
+    ENV_D,
+    ENV_B,
+    ENV_SWL,
+    ENV_SUS,
+    ENV_R,
+    AMOD_WAV,
+    AMOD_FREQ,
+    AMOD_GAIN,
+    FMOD_WAV,
+    FMOD_FREQ,
+    FMOD_GAIN
+};
+
 enum casynth_param_type {
     PARAM_FLOAT,
     PARAM_INT,

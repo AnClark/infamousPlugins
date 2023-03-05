@@ -267,3 +267,18 @@ void casynth_engine::process(const float* input_mono, float* output_mono, uint32
         } // active notes
     } // leftovers
 }
+
+void casynth_engine::panic()
+{
+    casynth_engine* synth = this;
+    uint8_t         i, num;
+
+    // Perform ALL_NOTES_OFF and ALL_SOUNDS_OFF.
+    // This routine is copied from process().
+    for (i = 0; i < synth->nactive; i++) {
+        num = synth->active[i];
+        end_note(&(synth->note[num]), 0);
+    }
+    synth->nactive    = 0;
+    synth->nsustained = 0;
+}

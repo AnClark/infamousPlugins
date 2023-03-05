@@ -47,4 +47,5 @@ public:
     ~casynth_engine();
 
     void process(const float* input_mono, float* output_mono, uint32_t nframes, const DISTRHO::MidiEvent* midiEvents, uint32_t midiEventCount);
+    void panic();
 };

@@ -130,6 +130,10 @@ void CaSynthEditor::sizeChanged(uint width, uint height)
         fCaSynthUI->ui->size(width, height);
 }
 
+void CaSynthEditor::stateChanged(const char* key, const char* value)
+{
+}
+
 void CaSynthEditor::visibilityChanged(const bool visible)
 {
 }

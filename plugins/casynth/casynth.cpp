@@ -1,7 +1,7 @@
 #include "casynth.hpp"
 
 casynthPlugin::casynthPlugin()
-    : DISTRHO::Plugin(casynth_param_id::PARAM_COUNT, 0, 0)
+    : DISTRHO::Plugin(casynth_param_id::PARAM_COUNT, 0, 1) // 21 params, 0 program, 1 state
 {
     fSampleRate  = getSampleRate();
     fSynthesizer = std::make_unique<casynth_engine>(double(fSampleRate));
@@ -79,6 +79,13 @@ void casynthPlugin::initParameter(uint32_t index, Parameter& parameter)
     setParameterValue(index, parameter.ranges.def);
 }
 
+void casynthPlugin::initState(uint32_t index, State& state)
+{
+    // Assign a dummy state.
+    state.key          = "Default";
+    state.defaultValue = "";
+}
+
 float casynthPlugin::getParameterValue(uint32_t index) const
 {
     if (fSynthesizer == nullptr)
@@ -93,6 +100,15 @@ void casynthPlugin::setParameterValue(uint32_t index, float value)
         return;
 
     fSynthesizer->params[index] = value;
+}
+
+void casynthPlugin::setState(const char* key, const char* value)
+{
+    if (fSynthesizer == nullptr)
+        return;
+
+    // The only usage of state is: to switch off all sounds when loading a preset from DAW.
+    fSynthesizer->panic();
 }
 
 void casynthPlugin::activate() { }

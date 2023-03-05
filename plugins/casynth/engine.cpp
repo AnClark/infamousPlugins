@@ -200,6 +200,10 @@ void casynth_engine::process(const float* input_mono, float* output_mono, uint32
                     for (i = 0; i < synth->nactive; i++) {
                         num = synth->active[i];
                         end_note(&(synth->note[num]), t);
+
+                        // Reset note dead state.
+                        // If not reset, the active note will unable to play again.
+                        synth->note[num].note_dead = true;
                     }
                     synth->nactive    = 0;
                     synth->nsustained = 0;
@@ -278,6 +282,10 @@ void casynth_engine::panic()
     for (i = 0; i < synth->nactive; i++) {
         num = synth->active[i];
         end_note(&(synth->note[num]), 0);
+
+        // Reset note dead state.
+        // If not reset, the active note will unable to play again.
+        synth->note[num].note_dead = true;
     }
     synth->nactive    = 0;
     synth->nsustained = 0;

@@ -3,4 +3,4 @@
 *avtk_*
 *.user
 .cache*
-build*
+build*/

@@ -90,6 +90,8 @@ if (BUILD_UI)
             params.cpp
     )
 
+    target_compile_definitions (${PLUGIN} PUBLIC ENABLE_UI=1)
+
     target_link_libraries(${PLUGIN}-ui PRIVATE
         ${NTK_LIBRARIES}
         ${CAIRO_LIBRARIES}

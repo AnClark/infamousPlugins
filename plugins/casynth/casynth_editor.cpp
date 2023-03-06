@@ -24,8 +24,10 @@ CaSynthEditor::CaSynthEditor()
     fCaSynthUI->set_editor_instance(this);
 
     // Remember to clean up existed FLTK window as well
-    if (fCaSynthUI->ui)
+    if (fCaSynthUI->ui) {
         delete fCaSynthUI->ui;
+        fCaSynthUI = nullptr;
+    }
 
     fParentWindow = getParentWindowHandle();
 
@@ -54,7 +56,10 @@ CaSynthEditor::CaSynthEditor()
 
 CaSynthEditor::~CaSynthEditor()
 {
-    delete fCaSynthUI->ui;
+    if (fCaSynthUI->ui) {
+        delete fCaSynthUI->ui;
+        fCaSynthUI->ui = nullptr;
+    }
 }
 
 void CaSynthEditor::parameterChanged(uint32_t index, float value)
@@ -133,8 +138,9 @@ void CaSynthEditor::parameterChanged(uint32_t index, float value)
 
 void CaSynthEditor::sizeChanged(uint width, uint height)
 {
-    if (fCaSynthUI && width > 0 && height > 0)
-        fCaSynthUI->ui->size(width, height);
+    if (fCaSynthUI != nullptr && fCaSynthUI->ui != nullptr)
+        if (width > 0 && height > 0)
+            fCaSynthUI->ui->size(width, height);
 }
 
 void CaSynthEditor::stateChanged(const char* key, const char* value)
@@ -147,7 +153,7 @@ void CaSynthEditor::visibilityChanged(const bool visible)
 
 void CaSynthEditor::uiIdle()
 {
-    if (fCaSynthUI != nullptr)
+    if (fCaSynthUI != nullptr && fCaSynthUI->ui != nullptr)
         fCaSynthUI->idle();
 }
 

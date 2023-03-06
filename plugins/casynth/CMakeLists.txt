@@ -23,7 +23,15 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g")
 # check for our various libraries
 find_package (PkgConfig)
 pkg_check_modules (CAIRO cairo)
-pkg_check_modules (NTK ntk)
+if (WIN32 OR APPLE)
+    message(STATUS "Running on non-X11 environments. Using FLTK.")
+else ()
+    # On X11, prefer NTK
+    pkg_check_modules (NTK ntk)
+
+    set (FLUID_EXECUTABLE_NAME ntk-fluid)
+endif ()
+
 
 include_directories (
     ${NTK_INCLUDE_DIRS}
@@ -40,7 +48,7 @@ link_directories (${NTK_LIBRARY_DIRS} ${CAIRO_LIBRARY_DIRS})
 #
 
 if (CAIRO_FOUND AND NTK_FOUND)
-    find_program (FLTK_FLUID_EXECUTABLE ntk-fluid)
+    find_program (FLTK_FLUID_EXECUTABLE ${FLUID_EXECUTABLE_NAME})
 
     # fltk_wrap_ui() will pre-define a target.
     # Set target to DPF UI. This can avoid warnings.
@@ -75,6 +83,7 @@ if (BUILD_UI)
     target_link_libraries(${PLUGIN}-ui PRIVATE
         ${NTK_LIBRARIES}
         ${CAIRO_LIBRARIES}
+        ${WIN32_DEP_LIBRARIES}
     )
 
     # Include FLUID-generated headers

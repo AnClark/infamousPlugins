@@ -13,6 +13,13 @@ set( PLUGINS_CLASSIC "casynth;envfollower;hip2b;powerup;powercut;cheapdist;stuck
 #set( PLUGINS_DPF "casynth;envfollower;hip2b;powerup;powercut;cheapdist;stuck;ewham;lushlife;bentdelay;mindi;octolo" CACHE STRING "List of plugins to build (DPF ported edition)")
 set( PLUGINS_DPF "casynth" CACHE STRING "List of plugins to build (DPF ported edition)")
 
+# Include FLTK support on non-X11 environments
+if (WIN32 OR APPLE)
+    # Now FLTK supports Cairo driver
+    list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+    include(BuildFLTK)
+endif ()
+
 if (CLASSIC)
     foreach( plug ${PLUGINS_CLASSIC} )
         add_subdirectory(src/${plug})
@@ -35,11 +42,13 @@ install(TARGETS infamous-rule
 )
 
 # uninstall target
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-    IMMEDIATE @ONLY)
+# NOTICE: only add it on Linux, since FLTK has the same statements
+if(NOT WIN32)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+        IMMEDIATE @ONLY)
 
-add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
-
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+endif()

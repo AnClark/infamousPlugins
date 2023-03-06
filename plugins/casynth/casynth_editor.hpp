@@ -3,7 +3,11 @@
 
 #include "DistrhoUI.hpp"
 
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <X11/X.h>
+#endif
 #include <memory>
 
 // Forward decls.

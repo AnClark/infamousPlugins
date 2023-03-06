@@ -29,6 +29,12 @@ CaSynthEditor::CaSynthEditor()
 
     fParentWindow = getParentWindowHandle();
 
+#if _WIN32
+    // Sync cairo contexts with Fl_Window
+    // See: vendor/fltk/README.Cairo.txt:64
+    Fl::cairo_autolink_context(true);
+#endif
+
     fCaSynthUI->ui = fCaSynthUI->show();
     srand((unsigned int)time(NULL));
     fl_open_display();
@@ -37,7 +43,8 @@ CaSynthEditor::CaSynthEditor()
     setSize(fCaSynthUI->ui->w(), fCaSynthUI->ui->h());
 
 #if _WIN32
-    fl_embed(fCaSynthUI->ui, (Window)fParentWindow);
+    // Embed window is not yet implemented
+    // fl_embed(fCaSynthUI->ui, (Window)fParentWindow);
 #else
     fl_embed(fCaSynthUI->ui, (Window)fParentWindow);
 #endif

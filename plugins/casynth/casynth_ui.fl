@@ -4,14 +4,14 @@ header_name {.h}
 code_name {.cxx}
 class CaSynthUI {open
 } {
-  Function {show()} {} {
+  Function {init()} {} {
     Fl_Window ui {
       label {the infamous cellular automaton synth} open
       xywh {329 161 460 600} type Double box UP_BOX resizable
       code0 {\#include"ffffltk.h"}
       code1 {\#define PI 3.141592654 // Polyfill for src/draw/draw_flatDial.h}
       code2 {using namespace ffffltk;}
-      code3 {o->show();} visible
+      code3 {// o->show();  // Manually show the UI via ui->show() on the plugin side} visible
     } {
       Fl_Group {} {open
         xywh {0 0 460 600} resizable

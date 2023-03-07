@@ -3,4 +3,4 @@
 	url = https://github.com/DISTRHO/DPF.git
 [submodule "vendor/fltk"]
 	path = vendor/fltk
-	url = https://github.com/fltk/fltk.git
+	url = https://github.com/AnClark/fltk.git

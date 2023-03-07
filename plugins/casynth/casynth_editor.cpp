@@ -39,6 +39,16 @@ CaSynthEditor::CaSynthEditor()
 #endif
 
     fCaSynthUI->ui = fCaSynthUI->init();
+#if _WIN32
+    // On Windows, use a Fl_Window to contain parent window info,
+    // so we can directly make use of FLTK's built-in embed window strategy (even though it's for FLTK's objects originally).
+    // Read the document of Fl_Window::override_winid() for more information. (This is AnClark's own extention, just in vendor/fltk/)
+    fParentWindowObject = std::make_unique<Fl_Window>(800, 480, DISTRHO_PLUGIN_NAME);
+    fParentWindowObject->override_winid(fParentWindow); // Override window ID with parent window's native ID
+    fParentWindowObject->cursor(FL_CURSOR_DEFAULT); // Explicitly show the cursor
+    fCaSynthUI->ui->parent(&(*fParentWindowObject));
+#endif
+
     fCaSynthUI->ui->show();
     srand((unsigned int)time(NULL));
     fl_open_display();
@@ -46,10 +56,8 @@ CaSynthEditor::CaSynthEditor()
     // set host to change size of the window
     setSize(fCaSynthUI->ui->w(), fCaSynthUI->ui->h());
 
-#if _WIN32
-    // Embed window is not yet implemented
-    // fl_embed(fCaSynthUI->ui, (Window)fParentWindow);
-#else
+#ifndef _WIN32
+    // On Linux, we prefer NTK's embed window API. This is NTK's own extension.
     fl_embed(fCaSynthUI->ui, (Window)fParentWindow);
 #endif
 

@@ -12,14 +12,16 @@
 
 // Forward decls.
 class CaSynthUI;
+class Fl_Window;
 
 class CaSynthEditor : public DISTRHO::UI {
     std::unique_ptr<CaSynthUI> fCaSynthUI;
     uintptr_t                  fParentWindow;
 
-    // TODO: Cross-platform window type
+    // Cross-platform window type
 #if _WIN32
-    HWND fWidget;
+    std::unique_ptr<Fl_Window> fParentWindowObject;
+    HWND                       fWidget;
 #else
     Window fWidget;
 #endif

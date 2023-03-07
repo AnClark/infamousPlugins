@@ -90,6 +90,11 @@ if (BUILD_UI)
     target_include_directories (${PLUGIN}-ui PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR}
     )
+
+    if (WIN32)
+        # Enable access to my custom FLTK API: Fl_Window::override_winid()
+        target_compile_definitions (${PLUGIN}-ui PRIVATE USE_EMBED_WINDOW=1)
+    endif ()
 else ()
     dpf_add_plugin (${PLUGIN}
         TARGETS vst2 vst3 lv2 clap

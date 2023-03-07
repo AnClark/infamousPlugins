@@ -38,7 +38,8 @@ CaSynthEditor::CaSynthEditor()
     Fl::cairo_autolink_context(true);
 #endif
 
-    fCaSynthUI->ui = fCaSynthUI->show();
+    fCaSynthUI->ui = fCaSynthUI->init();
+    fCaSynthUI->ui->show();
     srand((unsigned int)time(NULL));
     fl_open_display();
 

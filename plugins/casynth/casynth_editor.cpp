@@ -5,6 +5,7 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/x.H>
+#include <time.h>
 
 #include "casynth_ui.h"
 

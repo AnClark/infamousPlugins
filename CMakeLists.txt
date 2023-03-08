@@ -13,6 +13,16 @@ set( PLUGINS_CLASSIC "casynth;envfollower;hip2b;powerup;powercut;cheapdist;stuck
 #set( PLUGINS_DPF "casynth;envfollower;hip2b;powerup;powercut;cheapdist;stuck;ewham;lushlife;bentdelay;mindi;octolo" CACHE STRING "List of plugins to build (DPF ported edition)")
 set( PLUGINS_DPF "casynth" CACHE STRING "List of plugins to build (DPF ported edition)")
 
+set(EXTERNAL_PROJECT_DOWNLOAD_PATH ${PROJECT_BINARY_DIR}/deps/download)
+set(EXTERNAL_PROJECT_SOURCE_PATH ${PROJECT_BINARY_DIR}/deps/source)
+set(DEPS_PREFIX_PATH ${PROJECT_BINARY_DIR}/usr)
+
+option(USE_SYSTEM_CAIRO "Use system-provided Cairo library. Say NO if you want to build from source (for compatibility or debug)" ON)
+if (NOT USE_SYSTEM_CAIRO)
+    list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")  # Append more than once does not matter
+    include(BuildCairo)
+endif ()
+
 # Include FLTK support on non-X11 environments
 if (WIN32 OR APPLE)
     # Now FLTK supports Cairo driver

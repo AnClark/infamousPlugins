@@ -1,3 +1,4 @@
+# Set a bundle of FLTK build options
 set (FLTK_BUILD_EXAMPLES OFF CACHE BOOL "")
 set (FLTK_BUILD_TEST OFF CACHE BOOL "")
 set (FLTK_BUILD_FLTK_OPTIONS OFF CACHE BOOL "")
@@ -19,7 +20,16 @@ set (OPTION_USE_SYSTEM_LIBJPEG OFF CACHE BOOL "")
 set (OPTION_USE_SYSTEM_LIBPNG OFF CACHE BOOL "")
 set (OPTION_USE_SYSTEM_ZLIB OFF CACHE BOOL "")
 
+# AnClark's hack into FLTK: enable embed window related API
+set (OPTION_EMBED_WINDOW ON CACHE BOOL "")
+
+# -- End of FLTK build options
+
 add_subdirectory (${FLTK_SRC_DIR})
+
+if (NOT USE_SYSTEM_CAIRO)
+    include_directories (${DEPS_PREFIX_PATH}/include)
+endif ()
 
 # For compatibility, assign NTK-related vars to FLTK
 set (NTK_FOUND ON)
@@ -34,8 +44,13 @@ set (NTK_LIBRARIES
 )
 set (FLUID_EXECUTABLE_NAME fluid)
 
+# Pixman is already included in CAIRO_LIBRARIES when build from source
+if (USE_SYSTEM_CAIRO)
+    set (LINK_pixman pixman-1)
+endif ()
+
 set (WIN32_DEP_LIBRARIES
-    pixman-1
+    ${LINK_pixman}
     fontconfig
     freetype
     intl            # required by fontconfig

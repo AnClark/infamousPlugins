@@ -1,154 +1,107 @@
-#include "casynth_editor.hpp"
 #include "DistrhoUI.hpp"
-#include "params.hpp"
 
-#include <FL/Fl.H>
-#include <FL/Fl_Double_Window.H>
-#include <FL/x.H>
+// #include "Artwork.hpp"
+// #include "DemoWidgetBanner.hpp"
+// #include "DemoWidgetClickable.hpp"
+#include "widgets_background.hpp"
 
-#include "casynth_ui.h"
-
-CaSynthEditor::CaSynthEditor()
-    : UI(500, 500)
-    , fCaSynthUI(nullptr)
-{
-    // Use unique pointer to prevent UI crash.
-    //
-    // DPF loads editor instance twice. This will load NTK UI twice as well,
-    // resulting in malloc() conflict ("unaligned tcache chunk detected").
-    // Crashes occurs during set_initial_condition(), and occationally.
-    //
-    // By using unique pointer, only one UI instance is allowed, so it's much
-    // safer and reliable.
-    fCaSynthUI = std::make_unique<CaSynthUI>();
-    fCaSynthUI->set_editor_instance(this);
-
-    // Remember to clean up existed FLTK window as well
-    if (fCaSynthUI->ui)
-        delete fCaSynthUI->ui;
-
-    fParentWindow = getParentWindowHandle();
-
-    fCaSynthUI->ui = fCaSynthUI->show();
-    srand((unsigned int)time(NULL));
-    fl_open_display();
-
-    // set host to change size of the window
-    setSize(fCaSynthUI->ui->w(), fCaSynthUI->ui->h());
-
-#if _WIN32
-    fl_embed(fCaSynthUI->ui, (Window)fParentWindow);
-#else
-    fl_embed(fCaSynthUI->ui, (Window)fParentWindow);
-#endif
-
-    fWidget = fl_xid(fCaSynthUI->ui);
-}
-
-CaSynthEditor::~CaSynthEditor()
-{
-    delete fCaSynthUI->ui;
-}
-
-void CaSynthEditor::parameterChanged(uint32_t index, float value)
-{
-    if (!fCaSynthUI || !fCaSynthUI->ui) {
-        d_stderr2(">> parameterChanged: No UI available.");
-        return;
-    }
-
-    switch (index) {
-        case PARAM_CHANNEL:
-            fCaSynthUI->channel->value(value);
-            break;
-        case PARAM_MASTER_GAIN:
-            fCaSynthUI->mastergain->value(value);
-            break;
-        case PARAM_WAVE:
-            fCaSynthUI->cellwaveform->value(value);
-            break;
-        case PARAM_CELL_LIFE:
-            fCaSynthUI->lifetime->value(value);
-            break;
-        case PARAM_HARM_MODE:
-            fCaSynthUI->harmgain->value(value);
-            break;
-        case PARAM_NHARMONICS:
-            fCaSynthUI->nharmonics->value(value);
-            break;
-        case PARAM_HARM_WIDTH:
-            fCaSynthUI->harmwidth->value(value);
-            break;
-        case PARAM_ENV_A:
-            fCaSynthUI->a->value(value);
-            break;
-        case PARAM_ENV_D:
-            fCaSynthUI->d->value(value);
-            break;
-        case PARAM_ENV_B:
-            fCaSynthUI->b->value(value);
-            break;
-        case PARAM_ENV_SWL:
-            fCaSynthUI->sw->value(value);
-            break;
-        case PARAM_ENV_SUS:
-            fCaSynthUI->su->value(value);
-            break;
-        case PARAM_ENV_R:
-            fCaSynthUI->r->value(value);
-            break;
-        case PARAM_AMOD_WAV:
-            fCaSynthUI->amwave->value(value);
-            break;
-        case PARAM_AMOD_FREQ:
-            fCaSynthUI->amfreq->value(value);
-            break;
-        case PARAM_AMOD_GAIN:
-            fCaSynthUI->amgain->value(value);
-            break;
-        case PARAM_FMOD_WAV:
-            fCaSynthUI->fmwave->value(value);
-            break;
-        case PARAM_FMOD_FREQ:
-            fCaSynthUI->fmfreq->value(value);
-            break;
-        case PARAM_FMOD_GAIN:
-            fCaSynthUI->fmgain->value(value);
-            break;
-        case PARAM_RULE:
-            fCaSynthUI->set_rule(value);
-            break;
-        case PARAM_INIT_CELLS:
-            fCaSynthUI->set_initial_condition(value);
-            break;
-    } // switch
-}
-
-void CaSynthEditor::sizeChanged(uint width, uint height)
-{
-    if (fCaSynthUI && width > 0 && height > 0)
-        fCaSynthUI->ui->size(width, height);
-}
-
-void CaSynthEditor::stateChanged(const char* key, const char* value)
-{
-}
-
-void CaSynthEditor::visibilityChanged(const bool visible)
-{
-}
-
-void CaSynthEditor::uiIdle()
-{
-    if (fCaSynthUI != nullptr)
-        fCaSynthUI->idle();
-}
+#include "draw_casLabels.h"
+#include "draw_casbg.h"
 
 START_NAMESPACE_DISTRHO
 
+/**
+  We need a few classes from DGL.
+ */
+using DGL_NAMESPACE::CairoGraphicsContext;
+using DGL_NAMESPACE::CairoImage;
+using DGL_NAMESPACE::CairoImageButton;
+using DGL_NAMESPACE::CairoImageKnob;
+
+static const uint32_t BG_WIDTH = cairo_code_draw_casbg_get_width();
+static const uint32_t BG_HEIGHT = cairo_code_draw_casbg_get_height();
+
+class CairoExampleUI : public UI {
+public:
+    CairoExampleUI()
+        : UI(BG_WIDTH, BG_HEIGHT)
+    {
+        fBackground = new WidgetBackground(this);
+        fBackground->setSize(BG_WIDTH, BG_HEIGHT);
+        fBackground->setAbsolutePos(0, 0);
+        fBackground->setDrawingSize(BG_WIDTH, BG_HEIGHT);
+        fBackground->setDrawingFunction(cairo_code_draw_casbg_render);
+
+        fTitleLabel = new WidgetBackground(this);
+        fTitleLabel->setSize(140, 95);
+        fTitleLabel->setAbsolutePos(100, 10);
+        fTitleLabel->setDrawingSize(140, 95);
+        fTitleLabel->setDrawingFunction(cairo_code_draw_casTitleLabel_render);
+
+        // Debug
+        auto area = fTitleLabel->getConstrainedAbsoluteArea();
+        d_stderr("fTitleLabel draw area: %dx%d", area.getWidth(), area.getHeight());
+
+#if 0
+        // we can use this if/when our resources are scalable, for now they are PNGs
+        const double scaleFactor = getScaleFactor();
+        if (scaleFactor != 1.0)
+            setSize(200 * scaleFactor, 200 * scaleFactor);
+#else
+        // without scalable resources, let DPF handle the scaling internally
+        setGeometryConstraints(BG_WIDTH, BG_HEIGHT, false, true);
+#endif
+    }
+
+protected:
+    void onCairoDisplay(const CairoGraphicsContext& context) override
+    {
+        cairo_t* const cr = context.handle;
+        cairo_set_source_rgb(cr, 1.0, 0.8, 0.5);
+        cairo_paint(cr);
+    }
+
+#if 0
+    // we can use this if/when our resources are scalable, for now they are PNGs
+    void onResize(const ResizeEvent& ev) override
+    {
+        UI::onResize(ev);
+
+        const double scaleFactor = getScaleFactor();
+
+        fWidgetClickable->setSize(50*scaleFactor, 50*scaleFactor);
+        fWidgetClickable->setAbsolutePos(100*scaleFactor, 100*scaleFactor);
+
+        fWidgetBanner->setSize(180*scaleFactor, 80*scaleFactor);
+        fWidgetBanner->setAbsolutePos(10*scaleFactor, 10*scaleFactor);
+
+        fKnob->setSize(80*scaleFactor, 80*scaleFactor);
+        fKnob->setAbsolutePos(10*scaleFactor, 100*scaleFactor);
+
+        fButton->setSize(60*scaleFactor, 35*scaleFactor);
+        fButton->setAbsolutePos(100*scaleFactor, 160*scaleFactor);
+    }
+#endif
+
+    void parameterChanged(uint32_t index, float value) override
+    {
+        // unused
+        (void)index;
+        (void)value;
+    }
+
+    void stateChanged(const char* key, const char* value) override
+    {
+    }
+
+private:
+    ScopedPointer<WidgetBackground> fTitleLabel;
+    ScopedPointer<WidgetBackground> fBackground;
+};
+
 UI* createUI()
 {
-    return new CaSynthEditor();
+    return new CairoExampleUI;
 }
 
 END_NAMESPACE_DISTRHO

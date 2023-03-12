@@ -20,16 +20,22 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g")
 # UI dependency stuff
 #
 
+# Check which kind of UI we should build
+option (CASYNTH_DGL_UI "Build DGL-based UI for casynth" ON)
+
 # check for our various libraries
 find_package (PkgConfig)
 pkg_check_modules (CAIRO cairo)
-pkg_check_modules (NTK ntk)
+if (NOT CASYNTH_DGL_UI)
+    pkg_check_modules (NTK ntk)
+endif ()
 
 include_directories (
     ${NTK_INCLUDE_DIRS}
     ${CAIRO_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}/src/ffffltk
     ${PROJECT_SOURCE_DIR}/src/draw
+    ${PROJECT_SOURCE_DIR}/plugins/widgets
     .
 )
 
@@ -39,13 +45,16 @@ link_directories (${NTK_LIBRARY_DIRS} ${CAIRO_LIBRARY_DIRS})
 # UI stuff
 #
 
-if (CAIRO_FOUND AND NTK_FOUND)
+
+if ((NOT CASYNTH_DGL_UI) AND CAIRO_FOUND AND NTK_FOUND)
     find_program (FLTK_FLUID_EXECUTABLE ntk-fluid)
 
     # fltk_wrap_ui() will pre-define a target.
     # Set target to DPF UI. This can avoid warnings.
     fltk_wrap_ui(${PLUGIN}-ui casynth_ui.fl)
 
+    set (BUILD_UI ON)
+elseif (CASYNTH_DGL_UI AND CAIRO_FOUND)
     set (BUILD_UI ON)
 else()
     message(WARNING "UI Libraries Missing, no GUI will be installed")
@@ -56,7 +65,7 @@ endif()
 # Build plugin
 #
 
-if (BUILD_UI)
+if (BUILD_UI AND NOT CASYNTH_DGL_UI)
     dpf_add_plugin (${PLUGIN}
         TARGETS vst2 vst3 lv2 clap jack
         UI_TYPE external
@@ -72,7 +81,7 @@ if (BUILD_UI)
             params.cpp
     )
 
-    target_compile_definitions (${PLUGIN} PUBLIC ENABLE_UI=1)
+    target_compile_definitions (${PLUGIN} PUBLIC ENABLE_UI=1 ENABLE_UI_NTK=1)
 
     target_link_libraries(${PLUGIN}-ui PRIVATE
         ${NTK_LIBRARIES}
@@ -83,6 +92,22 @@ if (BUILD_UI)
     target_include_directories (${PLUGIN}-ui PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR}
     )
+elseif (BUILD_UI AND CASYNTH_DGL_UI)
+    dpf_add_plugin (${PLUGIN}
+        TARGETS vst2 vst3 lv2 clap jack
+        UI_TYPE cairo
+        FILES_DSP
+            casynth.cpp
+            engine.cpp
+            note.cpp
+            waves.cpp
+        FILES_UI
+            casynth_editor.cpp
+        FILES_COMMON
+            params.cpp
+    )
+
+    target_compile_definitions (${PLUGIN} PUBLIC ENABLE_UI=1 ENABLE_UI_DGL=1)
 else ()
     dpf_add_plugin (${PLUGIN}
         TARGETS vst2 vst3 lv2 clap

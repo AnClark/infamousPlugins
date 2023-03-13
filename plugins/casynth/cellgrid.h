@@ -117,6 +117,10 @@ public:
                 }
                 cells = temp << 1 | temp >> 15;
             } // rows
+
+            // Flush Cairo drawings: necessary at least for Windows
+            cairo_surface_t *s = cairo_get_target(cr);
+            cairo_surface_flush(s);
         } // if damage
     } // end draw
 

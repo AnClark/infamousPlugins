@@ -156,6 +156,10 @@ public:
             else default_bg_drawing(cr);
 
             cairo_restore( cr );
+
+            // Flush Cairo drawings: necessary at least for Windows
+            cairo_surface_t *s = cairo_get_target(cr);
+            cairo_surface_flush(s);
         }
     }
 

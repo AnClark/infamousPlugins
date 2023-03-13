@@ -65,13 +65,18 @@ else()
     set (BUILD_UI OFF)
 endif()
 
+# Do not build JACK standalone application on Windows
+if (NOT WIN32)
+    set (TARGET_JACK jack)
+endif()
+
 #
 # Build plugin
 #
 
 if (BUILD_UI)
     dpf_add_plugin (${PLUGIN}
-        TARGETS vst2 vst3 lv2 clap jack
+        TARGETS vst2 vst3 lv2 clap ${TARGET_JACK}
         UI_TYPE external
         FILES_DSP
             casynth.cpp

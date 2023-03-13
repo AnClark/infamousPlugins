@@ -19,6 +19,20 @@ else ()  # Plain by default
     set (MESON_BUILDTYPE_FLAG "--buildtype=plain")
 endif ()
 
+# Compiler selections
+string (TOLOWER "${CMAKE_C_COMPILER}" __CMAKE_C_COMPILER__lower)
+string (TOLOWER "${CMAKE_CXX_COMPILER}" __CMAKE_CXX_COMPILER__lower)
+
+string (REGEX MATCH ".*clang.*" C_COMPILER_IS_CLANG ${__CMAKE_C_COMPILER__lower})
+string (REGEX MATCH ".*clang.*" CXX_COMPILER_IS_CLANG ${__CMAKE_CXX_COMPILER__lower})
+
+if (C_COMPILER_IS_CLANG OR CXX_COMPILER_IS_CLANG)
+    set (MESON_COMPILER_ENV env CC=clang CXX=clang++)
+    message (WARNING "Due to limitations of Meson, CCache (or other compiler launchers) is not supported when building Cairo!")
+elseif (MSVC)
+    message (FATAL_ERROR "MSVC support is not yet implemented!")
+endif ()
+
 # For debug purpose only
 set (NEED_RECONFIGURE OFF)
 if (NEED_RECONFIGURE)
@@ -35,7 +49,7 @@ ExternalProject_Add (
     DOWNLOAD_EXTRACT_TIMESTAMP ON
     UPDATE_DISCONNECTED ON
 
-    CONFIGURE_COMMAND  meson setup ${MESON_RECONF_FLAG} --prefix=${DEPS_PREFIX_PATH} ${MESON_BUILDTYPE_FLAG} --wrap-mode=nofallback --default-library=static -Dgtk=disabled -Da64-neon=disabled ${EXTERNAL_PROJECT_SOURCE_PATH}/pixman
+    CONFIGURE_COMMAND ${MESON_COMPILER_ENV} meson setup ${MESON_RECONF_FLAG} --prefix=${DEPS_PREFIX_PATH} ${MESON_BUILDTYPE_FLAG} --wrap-mode=nofallback --default-library=static -Dgtk=disabled -Da64-neon=disabled ${EXTERNAL_PROJECT_SOURCE_PATH}/pixman
     BUILD_COMMAND ninja
     INSTALL_COMMAND ninja install
 )
@@ -49,7 +63,7 @@ ExternalProject_Add (
     GIT_COMMIT "c3b672634f"
     UPDATE_DISCONNECTED ON  # need this to avoid constant rebuild
 
-    CONFIGURE_COMMAND  meson setup ${MESON_RECONF_FLAG} --prefix=${DEPS_PREFIX_PATH} ${MESON_BUILDTYPE_FLAG} --wrap-mode=nofallback --default-library=static -Dauto_features=enabled -Dxlib=disabled -Dxcb=disabled -Dtests=disabled -Dspectre=disabled -Dtee=enabled -Dsymbol-lookup=disabled -Ddwrite=disabled ${EXTERNAL_PROJECT_SOURCE_PATH}/cairo
+    CONFIGURE_COMMAND ${MESON_COMPILER_ENV} meson setup ${MESON_RECONF_FLAG} --prefix=${DEPS_PREFIX_PATH} ${MESON_BUILDTYPE_FLAG} --wrap-mode=nofallback --default-library=static -Dauto_features=enabled -Dxlib=disabled -Dxcb=disabled -Dtests=disabled -Dspectre=disabled -Dtee=enabled -Dsymbol-lookup=disabled -Ddwrite=disabled ${EXTERNAL_PROJECT_SOURCE_PATH}/cairo
     BUILD_COMMAND ninja
     INSTALL_COMMAND ninja install
 )

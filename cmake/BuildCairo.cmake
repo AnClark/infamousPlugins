@@ -8,7 +8,16 @@ if (NOT EXTERNAL_PROJECT_INCLUDED)
     set (EXTERNAL_PROJECT_INCLUDED ON)
 endif ()
 
-set (CAIRO_DOWNLOAD_DIR)
+# Build type options
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set (MESON_BUILDTYPE_FLAG "--buildtype=release")
+elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set (MESON_BUILDTYPE_FLAG "--buildtype=debug")
+elseif (CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+    set (MESON_BUILDTYPE_FLAG "--buildtype=minsize")
+else ()  # Plain by default
+    set (MESON_BUILDTYPE_FLAG "--buildtype=plain")
+endif ()
 
 # For debug purpose only
 set (NEED_RECONFIGURE OFF)
@@ -26,7 +35,7 @@ ExternalProject_Add (
     DOWNLOAD_EXTRACT_TIMESTAMP ON
     UPDATE_DISCONNECTED ON
 
-    CONFIGURE_COMMAND  meson setup ${MESON_RECONF_FLAG} --prefix=${DEPS_PREFIX_PATH} --buildtype=plain --wrap-mode=nofallback --default-library=static -Dgtk=disabled -Da64-neon=disabled ${EXTERNAL_PROJECT_SOURCE_PATH}/pixman
+    CONFIGURE_COMMAND  meson setup ${MESON_RECONF_FLAG} --prefix=${DEPS_PREFIX_PATH} ${MESON_BUILDTYPE_FLAG} --wrap-mode=nofallback --default-library=static -Dgtk=disabled -Da64-neon=disabled ${EXTERNAL_PROJECT_SOURCE_PATH}/pixman
     BUILD_COMMAND ninja
     INSTALL_COMMAND ninja install
 )
@@ -40,7 +49,7 @@ ExternalProject_Add (
     GIT_COMMIT "c3b672634f"
     UPDATE_DISCONNECTED ON  # need this to avoid constant rebuild
 
-    CONFIGURE_COMMAND  meson setup ${MESON_RECONF_FLAG} --prefix=${DEPS_PREFIX_PATH} --buildtype=plain --wrap-mode=nofallback --default-library=static -Dauto_features=enabled -Dxlib=disabled -Dxcb=disabled -Dtests=disabled -Dspectre=disabled -Dtee=enabled -Dsymbol-lookup=disabled -Ddwrite=disabled ${EXTERNAL_PROJECT_SOURCE_PATH}/cairo
+    CONFIGURE_COMMAND  meson setup ${MESON_RECONF_FLAG} --prefix=${DEPS_PREFIX_PATH} ${MESON_BUILDTYPE_FLAG} --wrap-mode=nofallback --default-library=static -Dauto_features=enabled -Dxlib=disabled -Dxcb=disabled -Dtests=disabled -Dspectre=disabled -Dtee=enabled -Dsymbol-lookup=disabled -Ddwrite=disabled ${EXTERNAL_PROJECT_SOURCE_PATH}/cairo
     BUILD_COMMAND ninja
     INSTALL_COMMAND ninja install
 )

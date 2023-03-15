@@ -10,6 +10,8 @@
 #define DISTRHO_PLUGIN_HAS_UI 1
 #define DISTRHO_PLUGIN_HAS_EMBED_UI 1
 #define DISTRHO_PLUGIN_HAS_EXTERNAL_UI 1
+#define DISTRHO_UI_DEFAULT_WIDTH 460    // Setting a default size can avoid creating temporary UIs
+#define DISTRHO_UI_DEFAULT_HEIGHT 600
 #endif
 #define DISTRHO_PLUGIN_IS_RT_SAFE 1
 #define DISTRHO_PLUGIN_IS_SYNTH 1

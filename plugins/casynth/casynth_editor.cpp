@@ -69,7 +69,7 @@ void CaSynthEditor::parameterChanged(uint32_t index, float value)
         d_stderr2(">> parameterChanged: No UI available.");
         return;
     }
-
+#if 0
     switch (index) {
         case PARAM_CHANNEL:
             fCaSynthUI->channel->value(value);
@@ -135,6 +135,7 @@ void CaSynthEditor::parameterChanged(uint32_t index, float value)
             fCaSynthUI->set_initial_condition(value);
             break;
     } // switch
+#endif
 }
 
 void CaSynthEditor::sizeChanged(uint width, uint height)

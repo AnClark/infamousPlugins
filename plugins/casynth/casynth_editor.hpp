@@ -44,6 +44,17 @@ protected:
     void visibilityChanged(const bool visible) override;
     void uiIdle() override;
 
+private:
+    // ----------------------------------------------------------------------------------------------------------------
+    // Embedding window helpers
+
+    void _reparentWindow();
+#if defined(_WIN32) || defined(__APPLE__)
+    void _disableFltkScreenScaling();
+#endif
+
+    static uint32_t fEditorRefCount;
+
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CaSynthEditor)
 };
 

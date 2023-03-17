@@ -9,9 +9,14 @@
 
 #include "casynth_ui.h"
 
+// Initialize reference count
+uint32_t CaSynthEditor::fEditorRefCount = 0;
+
 CaSynthEditor::CaSynthEditor()
     : UI(500, 500)
     , fCaSynthUI(nullptr)
+    , fParentWindow(0)
+    , fWidget(nullptr)
 {
     // Use unique pointer to prevent UI crash.
     //
@@ -33,9 +38,24 @@ CaSynthEditor::CaSynthEditor()
     fParentWindow = getParentWindowHandle();
 
 #if _WIN32
-    // Sync cairo contexts with Fl_Window
-    // See: vendor/fltk/README.Cairo.txt:64
-    Fl::cairo_autolink_context(true);
+    /**
+     * Set FLTK global UI behaviors.
+     *
+     * All instances shares one config, so only set them once is enough.
+     * Here I use a global static reference count to make sure that those APIs will be only called once
+     * during the lifetime of all plugin instances.
+     * Many DAWs runs multiply plugin instances in one process, so they share the same static variable.
+     *
+     * NOTICE: _disableFltkScreenScaling() MUST be invoked only once, otherwise UI may not be shown. See its document.
+     */
+    if (fEditorRefCount++ == 0) { // Check and update reference count. 0 means no other instance exists
+        // Sync cairo contexts with Fl_Window
+        // See: vendor/fltk/README.Cairo.txt:64
+        Fl::cairo_autolink_context(true);
+
+        // Disable FLTK Hi-DPI scaling
+        _disableFltkScreenScaling();
+    }
 #endif
 
     fCaSynthUI->ui = fCaSynthUI->show();
@@ -45,14 +65,11 @@ CaSynthEditor::CaSynthEditor()
     // set host to change size of the window
     setSize(fCaSynthUI->ui->w(), fCaSynthUI->ui->h());
 
-#if _WIN32
-    // Embed window is not yet implemented
-    // fl_embed(fCaSynthUI->ui, (Window)fParentWindow);
-#else
-    fl_embed(fCaSynthUI->ui, (Window)fParentWindow);
-#endif
-
+    // get widget window ID
     fWidget = fl_xid(fCaSynthUI->ui);
+
+    // Now let's reparent plugin window
+    _reparentWindow();
 }
 
 CaSynthEditor::~CaSynthEditor()
@@ -61,6 +78,10 @@ CaSynthEditor::~CaSynthEditor()
         delete fCaSynthUI->ui;
         fCaSynthUI->ui = nullptr;
     }
+
+    // Check and update reference count
+    if (fEditorRefCount > 0)
+        fEditorRefCount--;
 }
 
 void CaSynthEditor::parameterChanged(uint32_t index, float value)
@@ -157,6 +178,46 @@ void CaSynthEditor::uiIdle()
     if (fCaSynthUI != nullptr && fCaSynthUI->ui != nullptr)
         fCaSynthUI->idle();
 }
+
+void CaSynthEditor::_reparentWindow()
+{
+#if defined(_WIN32)
+    // Reparent window
+    SetParent((HWND)fWidget, (HWND)fParentWindow);
+    // Reset window style (no border)
+    SetWindowLongPtrA((HWND)fWidget, GWL_STYLE, WS_CHILD | WS_VISIBLE | WS_SYSMENU);
+    // Reset window position and size
+    fCaSynthUI->ui->position(0, 0);
+#elif defined(__APPLE__)
+#warning "Apple embed window feature is not yet implemented"
+    return;
+#else
+    // On Linux we prefer NTK. Invoke NTK embed window API
+    fl_embed(fCaSynthUI->ui, (Window)fParentWindow);
+#endif
+}
+
+#if defined(_WIN32) || defined(__APPLE__) // NTK does not support Fl::screen_scale()
+void CaSynthEditor::_disableFltkScreenScaling()
+{
+    /**
+     * Disable FLTK Hi-DPI auto scaling.
+     * This will set all screen's scale factor to 1.0f.
+     *
+     * NOTICE: This method should only be called ONCE. Otherwise UI rendering issues will occur:
+     *         1. If you open more than 2 UIs in REAPER by using floating UI (or other DAWs with similar feature)
+     *            the UI may fail to load.
+     *         2. Even though you loaded more than 1 UI in REAPER, the second UI may have wrong position.
+     *            Such a UI misbehavior cannot be corrected by Fl_Window::position() or SetWindowPos().
+     */
+
+    DISTRHO_SAFE_ASSERT(fEditorRefCount == 0)
+
+    for (int scr = 0; scr < Fl::screen_count(); scr++) {
+        Fl::screen_scale(scr, 1.0f);
+    }
+}
+#endif
 
 START_NAMESPACE_DISTRHO
 

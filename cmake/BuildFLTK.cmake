@@ -28,7 +28,14 @@ set (OPTION_EMBED_WINDOW ON CACHE BOOL "")
 add_subdirectory (${FLTK_SRC_DIR})
 
 if (NOT USE_SYSTEM_CAIRO)
-    include_directories (${DEPS_PREFIX_PATH}/include)
+    include_directories (
+        ${CAIRO_INCLUDE_DIRS}    
+        ${DEPS_PREFIX_PATH}/include
+    )
+
+    # Cairo must be built before FLTK
+    add_dependencies(fltk cairo_from-source)
+    add_dependencies(fltk_cairo cairo_from-source)
 endif ()
 
 # For compatibility, assign NTK-related vars to FLTK

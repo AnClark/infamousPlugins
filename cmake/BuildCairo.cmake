@@ -3,6 +3,9 @@
 # - Cairo: DirectWrite is disabled, because it causes build error here, and infamousPlugins mainly draw UI in images,
 #          but rarely draw text.
 
+# Meson is essential!
+find_program (MESON_EXECUTABLE_CHECK meson REQUIRED)
+
 if (NOT EXTERNAL_PROJECT_INCLUDED)
     include (ExternalProject)
     set (EXTERNAL_PROJECT_INCLUDED ON)

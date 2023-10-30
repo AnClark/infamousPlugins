@@ -30,8 +30,8 @@ ExternalProject_Add (
     UPDATE_DISCONNECTED ON
 
     CONFIGURE_COMMAND  meson setup ${MESON_RECONF_FLAG} --prefix=${DEPS_PREFIX_PATH} --buildtype=plain --wrap-mode=nofallback --default-library=static -Dgtk=disabled -Da64-neon=disabled ${EXTERNAL_PROJECT_SOURCE_PATH}/pixman
-    BUILD_COMMAND ninja
-    INSTALL_COMMAND ninja install
+    BUILD_COMMAND meson compile
+    INSTALL_COMMAND meson install
 )
 
 ExternalProject_Add (
@@ -44,8 +44,8 @@ ExternalProject_Add (
     UPDATE_DISCONNECTED ON  # need this to avoid constant rebuild
 
     CONFIGURE_COMMAND  meson setup ${MESON_RECONF_FLAG} --prefix=${DEPS_PREFIX_PATH} --buildtype=plain --wrap-mode=nofallback --default-library=static -Dauto_features=enabled -Dxlib=disabled -Dxcb=disabled -Dtests=disabled -Dspectre=disabled -Dtee=enabled -Dsymbol-lookup=disabled -Ddwrite=disabled ${EXTERNAL_PROJECT_SOURCE_PATH}/cairo
-    BUILD_COMMAND ninja
-    INSTALL_COMMAND ninja install
+    BUILD_COMMAND meson compile
+    INSTALL_COMMAND meson install
 )
 
 set (CAIRO_FOUND ON)

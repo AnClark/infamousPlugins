@@ -53,11 +53,35 @@ link_directories (${NTK_LIBRARY_DIRS} ${CAIRO_LIBRARY_DIRS})
 #
 
 if (CAIRO_FOUND AND NTK_FOUND)
-    find_program (FLTK_FLUID_EXECUTABLE ${FLUID_EXECUTABLE_NAME})
+    if (I_AM_BUILDING_FLTK_FROM_SOURCE)
+        # If using FLTK, I prefer FLTK's FLUID.
+        #
+        # When building FLTK from source, we must wait until FLTK builds successfully, otherwise CMake will not find FLUID.
+        # However, the command find_program() does not support specifying dependencies.
+        # So we have to write our own procedure to compile "*.fl" file(s).
 
-    # fltk_wrap_ui() will pre-define a target.
-    # Set target to DPF UI. This can avoid warnings.
-    fltk_wrap_ui(${PLUGIN}-ui casynth_ui.fl)
+        set (${PLUGIN}-ui_FLTK_UI_SRCS ${CMAKE_CURRENT_BINARY_DIR}/casynth_ui.cxx ${CMAKE_CURRENT_BINARY_DIR}/casynth_ui.h)
+        set (FLTK_FLUID_EXECUTABLE ${PROJECT_BINARY_DIR}/vendor/fltk/bin/fluid)
+
+        message (STATUS "Using FLUID built from source: ${FLTK_FLUID_EXECUTABLE}")
+
+        # Manually invoke FLUID
+        add_custom_command (OUTPUT ${${PLUGIN}-ui_FLTK_UI_SRCS}
+            COMMAND ${FLTK_FLUID_EXECUTABLE} -c -h ${CMAKE_CURRENT_BINARY_DIR}/casynth_ui.h -o ${CMAKE_CURRENT_BINARY_DIR}/casynth_ui.cxx casynth_ui.fl
+            DEPENDS fluid
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+    else ()
+        # If using NTK, just use NTK's FLUID (or possibly pre-installed FLTK's).
+        # We can directly use CMake's built-in fltk_wrap_ui() to compile "*.fl" files.
+
+        find_program (FLTK_FLUID_EXECUTABLE ${FLUID_EXECUTABLE_NAME} REQUIRED NO_CACHE)
+        message (STATUS "Using FLUID provided by system: ${FLTK_FLUID_EXECUTABLE}")
+
+        # fltk_wrap_ui() will pre-define a target.
+        # Set target to DPF UI. This can avoid warnings.
+        fltk_wrap_ui(${PLUGIN}-ui casynth_ui.fl)
+    endif ()
 
     set (BUILD_UI ON)
 else()

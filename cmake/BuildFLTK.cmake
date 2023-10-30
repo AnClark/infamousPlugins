@@ -27,8 +27,13 @@ set (OPTION_EMBED_WINDOW ON CACHE BOOL "")
 
 add_subdirectory (${FLTK_SRC_DIR})
 
+# Do some essential preparations if we're building Cairo from source
 if (NOT USE_SYSTEM_CAIRO)
+    # Use our own include directory
     include_directories (${DEPS_PREFIX_PATH}/include)
+
+    # Make sure Pixman and Cairo are built before FLTK
+    add_dependencies (fltk pixman_from-source cairo_from-source)
 endif ()
 
 # For compatibility, assign NTK-related vars to FLTK

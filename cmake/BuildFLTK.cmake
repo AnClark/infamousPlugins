@@ -27,6 +27,10 @@ set (OPTION_EMBED_WINDOW ON CACHE BOOL "")
 
 add_subdirectory (${FLTK_SRC_DIR})
 
+# Mark that we are building FLTK from source.
+# I need to check this when finding FLUID in Plugin's CMakeLists.txt.
+set (I_AM_BUILDING_FLTK_FROM_SOURCE ON)
+
 # Do some essential preparations if we're building Cairo from source
 if (NOT USE_SYSTEM_CAIRO)
     # Use our own include directory

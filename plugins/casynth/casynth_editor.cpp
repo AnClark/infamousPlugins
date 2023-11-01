@@ -16,7 +16,11 @@ CaSynthEditor::CaSynthEditor()
     : UI(500, 500)
     , fCaSynthUI(nullptr)
     , fParentWindow(0)
+#if _WIN32
     , fWidget(nullptr)
+#else
+    , fWidget(0)
+#endif
 {
     // Use unique pointer to prevent UI crash.
     //

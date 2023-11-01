@@ -179,6 +179,14 @@ void CaSynthEditor::stateChanged(const char* key, const char* value)
 
 void CaSynthEditor::visibilityChanged(const bool visible)
 {
+    DISTRHO_SAFE_ASSERT(fCaSynthUI != nullptr && fCaSynthUI->ui != nullptr)
+
+    d_stderr("visiblity changed: %d", visible);
+
+    if (visible)
+        fCaSynthUI->ui->show();
+    else
+        fCaSynthUI->ui->hide();
 }
 
 void CaSynthEditor::uiIdle()

@@ -68,7 +68,7 @@ CaSynthEditor::CaSynthEditor()
 
     // Set FLTK window close callback. This callback gracefully handles the closing of UI.
     // NOTICE: FL_Window's callback is called when you close the window.
-    fCaSynthUI->ui->callback(CaSynthEditor::windowCloseCallback, this);
+    fCaSynthUI->ui->callback(CaSynthEditor::windowCloseCallback, &*fCaSynthUI);
 
     // set host to change size of the window
     setSize(fCaSynthUI->ui->w(), fCaSynthUI->ui->h());
@@ -250,7 +250,9 @@ void CaSynthEditor::windowCloseCallback(Fl_Widget* widget, void* v)
     Fl_Double_Window* window = (Fl_Double_Window*)widget;
 
     // 2nd argument is for userdata. We pass the editor instance here.
-    CaSynthEditor* editor = (CaSynthEditor*)v;
+    // NOTICE: Directly passing CaSynthEditor instance will crash the plugin when tuning parameters.
+    //         To prevent this, I pass CaSynthUI instead, then access its editor_instance.
+    CaSynthUI* casynthUI = (CaSynthUI*)v;
 
     d_stderr("[CaSynth] Attempt to close FLTK window");
 
@@ -260,7 +262,10 @@ void CaSynthEditor::windowCloseCallback(Fl_Widget* widget, void* v)
 
     // Ask DPF to close UI instance.
     // If you don't call this, plugin will remain alive even though host is closed.
-    editor->hide();
+    if (casynthUI->editor_instance)
+        casynthUI->editor_instance->hide();
+    else
+        d_stderr2("[CaSynth] WARNING during closing FLTK window: Editor instance is NOT set!");
 }
 
 START_NAMESPACE_DISTRHO

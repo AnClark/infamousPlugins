@@ -66,6 +66,10 @@ CaSynthEditor::CaSynthEditor()
     srand((unsigned int)time(NULL));
     fl_open_display();
 
+    // Set FLTK window close callback. This callback gracefully handles the closing of UI.
+    // NOTICE: FL_Window's callback is called when you close the window.
+    fCaSynthUI->ui->callback(CaSynthEditor::windowCloseCallback, this);
+
     // set host to change size of the window
     setSize(fCaSynthUI->ui->w(), fCaSynthUI->ui->h());
 
@@ -222,6 +226,42 @@ void CaSynthEditor::_disableFltkScreenScaling()
     }
 }
 #endif
+
+void CaSynthEditor::windowCloseCallback(Fl_Widget* widget, void* v)
+{
+    /**
+     * FLTK window close callback function.
+     * Gracefully handles the exit of plugin UI.
+     *
+     * On DPF, it's up to developers to handle the process of closing external window.
+     *
+     * In many 3rd-party toolkits (e.g. Qt, FLTK, NTK), simply closing the window does not mean to close
+     * the DISTRHO::UI instance. Instead, the instance is still active on background, even though the host
+     * is already closed.
+     * To entirely close the instance, you need to call hide(). This asks DPF to close and clean up
+     * explicitly.
+     *
+     * In FLTK, we add a callback for plugin's main window. When the window is about to close, the callback
+     * will invoke hide(), to make sure everything cleans up well.
+     * This callback is a static member of CaSynthEditor.
+     */
+
+    // 1st argument is the caller instance. Here it's the main window instance.
+    Fl_Double_Window* window = (Fl_Double_Window*)widget;
+
+    // 2nd argument is for userdata. We pass the editor instance here.
+    CaSynthEditor* editor = (CaSynthEditor*)v;
+
+    d_stderr("[CaSynth] Attempt to close FLTK window");
+
+    // Close FLTK window
+    // NOTICE: On window manager, `hide` means "close". Sometimes such a naming may be confusive.
+    window->hide();
+
+    // Ask DPF to close UI instance.
+    // If you don't call this, plugin will remain alive even though host is closed.
+    editor->hide();
+}
 
 START_NAMESPACE_DISTRHO
 

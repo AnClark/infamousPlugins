@@ -2,6 +2,7 @@
 #define CASYNTH_UI_HPP
 
 #include "DistrhoUI.hpp"
+#include "FL/Fl_Widget.H"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -27,6 +28,11 @@ class CaSynthEditor : public DISTRHO::UI {
 public:
     CaSynthEditor();
     ~CaSynthEditor();
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // FLTK Callbacks
+
+    static void windowCloseCallback(Fl_Widget*, void*);
 
 protected:
     // ----------------------------------------------------------------------------------------------------------------

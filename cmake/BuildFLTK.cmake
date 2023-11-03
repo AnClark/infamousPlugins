@@ -40,6 +40,16 @@ if (NOT USE_SYSTEM_CAIRO)
     add_dependencies (fltk pixman_from-source cairo_from-source)
 endif ()
 
+# To link against static Cairo on Win32 platform, make sure you've defined macro CAIRO_WIN32_STATIC_BUILD.
+# Otherwise, plenty of "undefined reference to __impl_cairo_*" linker error will occur!
+# See:
+#   - https://cairo.cairographics.narkive.com/NRTD7KEw/win32-static-linking
+#   - https://gitlab.freedesktop.org/cairo/cairo/-/merge_requests/265
+#   - https://cgit.freedesktop.org/cairo/tree/src/win32/cairo-win32-system.c
+if (WIN32)
+    target_compile_definitions (fltk PUBLIC CAIRO_WIN32_STATIC_BUILD=1)
+endif ()
+
 # For compatibility, assign NTK-related vars to FLTK
 set (NTK_FOUND ON)
 set (NTK_INCLUDE_DIRS ${FLTK_SRC_DIR} ${PROJECT_BINARY_DIR}/vendor/fltk)
